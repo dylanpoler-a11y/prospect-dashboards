@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pet Services Market Research — DIGs Target Markets</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-card: rgba(17, 24, 39, 0.8);
+  --bg-glass: rgba(255, 255, 255, 0.03);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-bright: rgba(255, 255, 255, 0.12);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-main: #f59e0b;
+  --accent-secondary: #d97706;
+  --accent-green: #10b981;
+  --accent-orange: #f59e0b;
+  --accent-red: #ef4444;
+  --glow-main: rgba(245, 158, 11, 0.3);
+  --glow-green: rgba(16, 185, 129, 0.3);
+}
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(245, 158, 11, 0.06), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(245, 158, 11, 0.04), transparent),
+    radial-gradient(ellipse 50% 50% at 50% 50%, rgba(6, 182, 212, 0.03), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app { position: relative; z-index: 1; }
+
+/* Header */
+.header {
+  padding: 16px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  background: rgba(10, 14, 26, 0.9);
+  position: sticky; top: 0; z-index: 1000;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--accent-main), var(--accent-secondary));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 18px;
+  box-shadow: 0 0 20px var(--glow-main);
+}
+.header h1 {
+  font-size: 20px; font-weight: 700;
+  background: linear-gradient(135deg, #fff, #94a3b8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+.header-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+
+/* KPI Row */
+.kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; padding: 20px 32px; }
+.kpi-card {
+  background: var(--bg-glass); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px; backdrop-filter: blur(10px);
+  transition: all 0.3s; position: relative; overflow: hidden; cursor: pointer;
+}
+.kpi-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 2px; background: var(--kpi-color, var(--accent-main)); opacity: 0.6;
+}
+.kpi-card:hover { border-color: var(--border-bright); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+.kpi-card.active { border-color: var(--kpi-color, var(--accent-main)); box-shadow: 0 0 20px color-mix(in srgb, var(--kpi-color, var(--accent-main)) 35%, transparent); transform: translateY(-3px); }
+.kpi-card.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--kpi-color, var(--accent-main)); opacity: 0.8; }
+.kpi-card:not(.active).dimmed { opacity: 0.4; }
+.kpi-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.kpi-value { font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+.kpi-sub { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+/* Main layout */
+.main-content { display: grid; grid-template-columns: 260px 1fr; gap: 0; min-height: calc(100vh - 260px); }
+
+/* Sidebar */
+.sidebar {
+  border-right: 1px solid var(--border);
+  padding: 20px 16px; background: rgba(10, 14, 26, 0.5);
+  backdrop-filter: blur(10px); overflow-y: auto;
+  max-height: calc(100vh - 260px); position: sticky; top: 72px;
+}
+
+.filter-section { margin-bottom: 24px; }
+.filter-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.filter-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.filter-btn {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 8px 10px; background: transparent; border: 1px solid transparent;
+  border-radius: 8px; color: var(--text-secondary); font-size: 12px;
+  font-weight: 500; cursor: pointer; transition: all 0.2s;
+  font-family: inherit; text-align: left; user-select: none;
+}
+.filter-btn:hover { background: var(--bg-glass); border-color: var(--border); color: var(--text-primary); }
+.filter-btn.active { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); color: var(--accent-main); }
+.filter-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.filter-count {
+  margin-left: auto; font-size: 10px; font-weight: 600;
+  color: var(--text-muted); background: rgba(255,255,255,0.05);
+  padding: 2px 7px; border-radius: 6px;
+}
+.filter-btn.active .filter-count { background: rgba(245, 158, 11, 0.2); color: var(--accent-main); }
+
+/* Search */
+.search-box {
+  width: 100%; padding: 10px 14px; background: var(--bg-glass);
+  border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text-primary); font-size: 13px; font-family: inherit;
+  outline: none; transition: all 0.3s;
+}
+.search-box::placeholder { color: var(--text-muted); }
+.search-box:focus { border-color: var(--accent-main); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); }
+
+/* Map */
+.map-container {
+  height: 340px; border-bottom: 1px solid var(--border);
+  position: relative;
+}
+#map { height: 100%; width: 100%; }
+.leaflet-container { background: var(--bg-secondary) !important; font-family: 'Inter', sans-serif !important; }
+.map-overlay {
+  position: absolute; top: 12px; right: 12px; z-index: 500;
+  background: rgba(10,14,26,0.85); backdrop-filter: blur(12px);
+  border: 1px solid var(--border-bright); border-radius: 10px;
+  padding: 12px 16px; font-size: 11px; color: var(--text-secondary);
+}
+.map-overlay-title { font-weight: 700; color: var(--text-primary); margin-bottom: 4px; font-size: 12px; }
+.map-legend-item { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.map-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+/* Table */
+.table-section { padding: 0; }
+.table-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px; border-bottom: 1px solid var(--border);
+}
+.table-title { font-size: 14px; font-weight: 700; }
+.table-count { font-size: 12px; color: var(--text-muted); }
+
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table thead th {
+  padding: 10px 16px; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted);
+  border-bottom: 1px solid var(--border); text-align: left;
+  background: rgba(10,14,26,0.3); position: sticky; top: 0;
+  cursor: pointer; user-select: none; transition: color 0.2s;
+}
+.data-table thead th:hover { color: var(--text-primary); }
+.data-table thead th.sorted { color: var(--accent-main); }
+.sort-arrow { font-size: 10px; margin-left: 4px; opacity: 0.4; }
+.data-table thead th.sorted .sort-arrow { opacity: 1; }
+.data-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+}
+.data-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+.data-table td { padding: 12px 16px; font-size: 13px; vertical-align: top; }
+.td-name { font-weight: 600; color: var(--text-primary); }
+.td-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.td-link { color: var(--accent-main); text-decoration: none; font-size: 12px; }
+.td-link:hover { text-decoration: underline; }
+
+.ownership-tag {
+  display: inline-block; padding: 3px 10px; border-radius: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+}
+.tag-small-biz { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+.tag-pe { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+.tag-public { background: rgba(59,130,246,0.15); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); }
+.tag-hospital { background: rgba(139,92,246,0.15); color: #8b5cf6; border: 1px solid rgba(139,92,246,0.3); }
+.tag-franchise { background: rgba(236,72,153,0.15); color: #ec4899; border: 1px solid rgba(236,72,153,0.3); }
+.tag-unknown { background: rgba(100,116,139,0.15); color: #94a3b8; border: 1px solid rgba(100,116,139,0.3); }
+.tag-not-researched { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+.tag-oob { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+
+/* Contact Grade */
+.grade-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  font-size: 12px; font-weight: 800; letter-spacing: -0.5px;
+}
+.grade-1 { background: rgba(16,185,129,0.18); color: #10b981; border: 1.5px solid rgba(16,185,129,0.4); box-shadow: 0 0 8px rgba(16,185,129,0.15); }
+.grade-2 { background: rgba(245,158,11,0.18); color: #f59e0b; border: 1.5px solid rgba(245,158,11,0.4); }
+.grade-3 { background: rgba(100,116,139,0.18); color: #94a3b8; border: 1.5px solid rgba(100,116,139,0.3); }
+.grade-none { background: rgba(255,255,255,0.03); color: var(--text-muted); border: 1px solid var(--border); }
+.grade-label { font-size: 9px; color: var(--text-muted); margin-top: 2px; text-align: center; }
+
+/* Pagination */
+.pagination {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px; border-top: 1px solid var(--border);
+  background: rgba(10,14,26,0.3);
+}
+.pagination-info { font-size: 12px; color: var(--text-muted); }
+.pagination-btns { display: flex; gap: 8px; }
+.page-btn {
+  padding: 6px 16px; background: var(--bg-glass); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text-secondary); font-size: 12px;
+  cursor: pointer; transition: all 0.2s; font-family: inherit;
+}
+.page-btn:hover:not(:disabled) { border-color: var(--accent-main); color: var(--text-primary); }
+.page-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* Tooltip */
+.state-tooltip {
+  background: rgba(10,14,26,0.95) !important;
+  border: 1px solid var(--border-bright) !important;
+  color: var(--text-primary) !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+}
+.leaflet-tooltip-top:before { border-top-color: rgba(10,14,26,0.95) !important; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">P</div>
+      <div>
+        <h1>Pet Services Market Research</h1>
+        <div class="header-subtitle">DIGs — Target Market Intelligence</div>
+      </div>
+    </div>
+    <div class="header-right"></div>
+  </div>
+
+  <!-- KPI Row -->
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <!-- Map -->
+  <div class="map-container">
+    <div id="map"></div>
+    <div class="map-overlay">
+      <div class="map-overlay-title">DIGs Operating States</div>
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:rgba(245, 158, 11,0.5)"></div> Target states</div>
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:rgba(16,185,129,0.6)"></div> Small business (prospects)</div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Sidebar Filters -->
+    <div class="sidebar">
+      <div class="filter-section">
+        <input type="text" class="search-box" placeholder="Search companies..." id="searchInput">
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-title">Ownership Type</div>
+        <div id="ownershipFilters"></div>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-title">State</div>
+        <div id="stateFilters"></div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-section">
+      <div class="table-header">
+        <div class="table-title">Companies</div>
+        <div class="table-count" id="tableCount"></div>
+      </div>
+      <div style="overflow-y: auto; max-height: calc(100vh - 500px);">
+        <table class="data-table">
+          <thead>
+            <tr id="tableHead">
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <div class="pagination-info" id="paginationInfo"></div>
+        <div class="pagination-btns">
+          <button class="page-btn" id="prevBtn" onclick="prevPage()">&larr; Previous</button>
+          <button class="page-btn" id="nextBtn" onclick="nextPage()">Next &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const ALL_DATA = [];
+
+const TARGET_STATES = ["Texas", "Florida", "California", "Georgia", "North Carolina", "Colorado"];
+const ACCENT_RGB = '245, 158, 11';
+
+let map, statesLayer, markersLayer, stateGeoData;
+let stats = null;
+let companies = [];
+let page = 1;
+const perPage = 50;
+let totalFiltered = 0;
+
+let filterState = '';
+let filterOwnership = 'Small business owner';
+let searchQuery = '';
+let searchTimeout = null;
+let sortField = 'grade';
+let sortDir = 'asc';
+
+const ownershipColors = {
+  'Small business owner': { color: '#10b981', bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.3)', cls: 'tag-small-biz' },
+  'PE backed': { color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)', cls: 'tag-pe' },
+  'Public': { color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', border: 'rgba(59,130,246,0.3)', cls: 'tag-public' },
+  'Hospital/Health System': { color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)', border: 'rgba(139,92,246,0.3)', cls: 'tag-hospital' },
+  'Franchise': { color: '#ec4899', bg: 'rgba(236,72,153,0.15)', border: 'rgba(236,72,153,0.3)', cls: 'tag-franchise' },
+  'Unknown': { color: '#94a3b8', bg: 'rgba(100,116,139,0.15)', border: 'rgba(100,116,139,0.3)', cls: 'tag-unknown' },
+  'Out-of-business': { color: '#ef4444', bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.3)', cls: 'tag-oob' },
+};
+
+// ── Compute Stats from embedded data ──────────────────────────────
+function computeStats() {
+  let total = ALL_DATA.length;
+  let small_biz = 0, pe = 0, public_co = 0, unknown = 0, not_researched = 0;
+  const stateMap = {};
+
+  ALL_DATA.forEach(c => {
+    const o = c.ai_ownership_research;
+    if (!o) { not_researched++; }
+    else if (o === 'Small business owner') { small_biz++; }
+    else if (o === 'PE backed') { pe++; }
+    else if (o === 'Public') { public_co++; }
+    else if (o === 'Unknown') { unknown++; }
+
+    if (TARGET_STATES.includes(c.state)) {
+      if (!stateMap[c.state]) stateMap[c.state] = { state: c.state, total: 0, small_biz: 0 };
+      stateMap[c.state].total++;
+      if (o === 'Small business owner') stateMap[c.state].small_biz++;
+    }
+  });
+
+  const by_state = Object.values(stateMap).sort((a, b) => b.total - a.total);
+  return { totals: { total, small_biz, pe, public_co, unknown, not_researched }, by_state };
+}
+
+// ── Filter & Paginate ──────────────────────────────────────────────
+function filterCompanies() {
+  let filtered = ALL_DATA;
+  if (filterState) filtered = filtered.filter(c => c.state === filterState);
+  if (filterOwnership) {
+    if (filterOwnership === 'not_researched') {
+      filtered = filtered.filter(c => !c.ai_ownership_research);
+    } else {
+      filtered = filtered.filter(c => c.ai_ownership_research === filterOwnership);
+    }
+  }
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(c =>
+      (c.name && c.name.toLowerCase().includes(q)) ||
+      (c.owners && c.owners.toLowerCase().includes(q)) ||
+      (c.website && c.website.toLowerCase().includes(q))
+    );
+  }
+
+  if (sortField) {
+    filtered.sort((a, b) => {
+      let va, vb;
+      switch (sortField) {
+        case 'name': va = (a.name || '').toLowerCase(); vb = (b.name || '').toLowerCase(); break;
+        case 'state': va = (a.state || '').toLowerCase(); vb = (b.state || '').toLowerCase(); break;
+        case 'ownership': va = (a.ai_ownership_research || 'zzz').toLowerCase(); vb = (b.ai_ownership_research || 'zzz').toLowerCase(); break;
+        case 'grade': va = a.contact_grade || 99; vb = b.contact_grade || 99; break;
+        case 'owners': va = (a.owners || 'zzz').toLowerCase(); vb = (b.owners || 'zzz').toLowerCase(); break;
+        case 'website': va = (a.website || 'zzz').toLowerCase(); vb = (b.website || 'zzz').toLowerCase(); break;
+        default: return 0;
+      }
+      if (va < vb) return sortDir === 'asc' ? -1 : 1;
+      if (va > vb) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  totalFiltered = filtered.length;
+  const start = (page - 1) * perPage;
+  companies = filtered.slice(start, start + perPage);
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+function init() {
+  initMap();
+  loadStats();
+  loadCompanies();
+
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      searchQuery = e.target.value;
+      page = 1;
+      loadCompanies();
+    }, 300);
+  });
+}
+
+// ── Map ───────────────────────────────────────────────────────────
+function initMap() {
+  map = L.map('map', {
+    center: [37, -96], zoom: 4, attributionControl: false,
+    minZoom: 3, scrollWheelZoom: false, zoomSnap: 0.25
+  });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+
+  map.getContainer().addEventListener('wheel', function(e) {
+    if (e.ctrlKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      const zoomChange = -e.deltaY * 0.01;
+      map.setZoom(Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), map.getZoom() + zoomChange)), { animate: false });
+    }
+  }, { passive: false });
+
+  statesLayer = L.layerGroup().addTo(map);
+  markersLayer = L.layerGroup().addTo(map);
+
+  fetch('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json')
+    .then(r => r.json())
+    .then(geo => { stateGeoData = geo; renderStates(); });
+}
+
+function renderStates() {
+  if (!stateGeoData || !stats) return;
+  statesLayer.clearLayers();
+
+  const stateCounts = {};
+  const stateSmallBiz = {};
+  if (stats.by_state) {
+    stats.by_state.forEach(s => {
+      stateCounts[s.state] = s.total;
+      stateSmallBiz[s.state] = s.small_biz;
+    });
+  }
+  const maxCount = Math.max(...Object.values(stateCounts), 1);
+
+  L.geoJSON(stateGeoData, {
+    style: feature => {
+      const name = feature.properties.name;
+      const isTarget = TARGET_STATES.includes(name);
+      const count = stateCounts[name] || 0;
+      const isFiltered = filterState === name;
+
+      if (isFiltered) {
+        return {
+          fillColor: `rgba(${ACCENT_RGB}, 0.35)`,
+          fillOpacity: 1,
+          color: `rgba(${ACCENT_RGB}, 0.8)`,
+          weight: 2.5,
+        };
+      }
+      if (isTarget && count > 0) {
+        const ratio = count / maxCount;
+        const opacity = 0.08 + ratio * 0.3;
+        return {
+          fillColor: `rgba(${ACCENT_RGB}, ${opacity})`,
+          fillOpacity: 1,
+          color: `rgba(${ACCENT_RGB}, ${0.2 + ratio * 0.4})`,
+          weight: 1,
+        };
+      }
+      return {
+        fillColor: 'rgba(255,255,255,0.01)',
+        fillOpacity: 1,
+        color: 'rgba(255,255,255,0.06)',
+        weight: 0.3,
+      };
+    },
+    onEachFeature: (feature, layer) => {
+      const name = feature.properties.name;
+      const count = stateCounts[name] || 0;
+      const smallBiz = stateSmallBiz[name] || 0;
+      if (TARGET_STATES.includes(name)) {
+        layer.on({
+          mouseover: e => {
+            layer.bindTooltip(`${name}: ${count} companies (${smallBiz} small biz)`, {
+              sticky: true, className: 'state-tooltip'
+            }).openTooltip();
+            if (filterState !== name) {
+              e.target.setStyle({ weight: 2.5, color: `rgba(${ACCENT_RGB},0.7)` });
+            }
+          },
+          mouseout: e => {
+            layer.unbindTooltip();
+            if (filterState !== name) {
+              const ratio = count / maxCount;
+              e.target.setStyle({
+                color: `rgba(${ACCENT_RGB}, ${0.2 + ratio * 0.4})`,
+                weight: 1
+              });
+            }
+          },
+          click: e => {
+            L.DomEvent.stopPropagation(e);
+            filterState = filterState === name ? '' : name;
+            page = 1;
+            renderStateFilters();
+            renderStates();
+            loadCompanies();
+          }
+        });
+      }
+    }
+  }).addTo(statesLayer);
+}
+
+// ── Stats & Filters ───────────────────────────────────────────────
+function loadStats() {
+  stats = computeStats();
+  renderKPIs();
+  renderOwnershipFilters();
+  renderStateFilters();
+  renderStates();
+}
+
+function renderKPIs() {
+  const t = stats.totals;
+  const kpis = [
+    { label: 'Total', value: t.total, color: '#f59e0b', key: '' },
+    { label: 'Small Business', value: t.small_biz, color: '#10b981', key: 'Small business owner' },
+    { label: 'PE Backed', value: t.pe, color: '#f59e0b', key: 'PE backed' },
+    { label: 'Public', value: t.public_co, color: '#3b82f6', key: 'Public' },
+    { label: 'Unknown', value: t.unknown, color: '#94a3b8', key: 'Unknown' },
+    { label: 'Not Researched', value: t.not_researched, color: '#f87171', key: 'not_researched' },
+  ];
+
+  document.getElementById('kpiRow').innerHTML = kpis.map(k => `
+    <div class="kpi-card ${filterOwnership === k.key ? 'active' : (filterOwnership && filterOwnership !== k.key ? 'dimmed' : '')}"
+         style="--kpi-color: ${k.color}" onclick="toggleOwnershipKPI('${k.key}')">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value" style="color: ${k.color}">${k.value.toLocaleString()}</div>
+      <div class="kpi-sub">${k.key === '' ? 'across ' + stats.by_state.length + ' states' :
+        k.key === 'Small business owner' ? '\ud83c\udfaf acquisition prospects' :
+        k.key === 'not_researched' ? 'pending AI analysis' : 'companies'}</div>
+    </div>
+  `).join('');
+}
+
+function renderOwnershipFilters() {
+  const t = stats.totals;
+  const types = [
+    { key: 'Small business owner', label: 'Small Business Owner', count: t.small_biz, color: '#10b981' },
+    { key: 'PE backed', label: 'PE Backed', count: t.pe, color: '#f59e0b' },
+    { key: 'Public', label: 'Public', count: t.public_co, color: '#3b82f6' },
+    { key: 'Unknown', label: 'Unknown', count: t.unknown, color: '#94a3b8' },
+    { key: 'not_researched', label: 'Not Researched', count: t.not_researched, color: '#f87171' },
+  ];
+
+  document.getElementById('ownershipFilters').innerHTML = types.map(t => `
+    <button class="filter-btn ${filterOwnership === t.key ? 'active' : ''}"
+            onclick="toggleOwnership('${t.key}')">
+      <span class="filter-dot" style="background: ${t.color}"></span>
+      ${t.label}
+      <span class="filter-count">${t.count}</span>
+    </button>
+  `).join('');
+}
+
+function renderStateFilters() {
+  const byState = stats.by_state || [];
+  document.getElementById('stateFilters').innerHTML = byState.map(s => `
+    <button class="filter-btn ${filterState === s.state ? 'active' : ''}"
+            onclick="toggleState('${s.state}')">
+      <span class="filter-dot" style="background: ${filterState === s.state ? '#f59e0b' : '#64748b'}"></span>
+      ${s.state}
+      <span class="filter-count">${s.total}</span>
+    </button>
+  `).join('');
+}
+
+function toggleOwnership(key) {
+  filterOwnership = filterOwnership === key ? '' : key;
+  page = 1;
+  renderKPIs();
+  renderOwnershipFilters();
+  loadCompanies();
+}
+
+function toggleOwnershipKPI(key) {
+  filterOwnership = filterOwnership === key ? '' : key;
+  page = 1;
+  renderKPIs();
+  renderOwnershipFilters();
+  loadCompanies();
+}
+
+function toggleState(state) {
+  filterState = filterState === state ? '' : state;
+  page = 1;
+  renderStateFilters();
+  renderStates();
+  loadCompanies();
+}
+
+// ── Table ─────────────────────────────────────────────────────────
+const columns = [
+  { key: 'name', label: 'Company' },
+  { key: 'state', label: 'Location' },
+  { key: 'ownership', label: 'Ownership' },
+  { key: 'grade', label: 'Grade' },
+  { key: 'owners', label: 'Owners' },
+  { key: 'website', label: 'Website' },
+];
+
+function sortBy(field) {
+  if (sortField === field) {
+    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortField = field;
+    sortDir = 'asc';
+  }
+  page = 1;
+  loadCompanies();
+}
+
+function renderHeaders() {
+  document.getElementById('tableHead').innerHTML = columns.map(col => {
+    const isSorted = sortField === col.key;
+    const arrow = isSorted ? (sortDir === 'asc' ? '\u25B2' : '\u25BC') : '\u25B4';
+    return `<th class="${isSorted ? 'sorted' : ''}" onclick="sortBy('${col.key}')">${col.label}<span class="sort-arrow">${arrow}</span></th>`;
+  }).join('');
+}
+
+function loadCompanies() {
+  filterCompanies();
+  renderHeaders();
+  renderTable();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = companies.map(c => {
+    const oc = ownershipColors[c.ai_ownership_research] || ownershipColors['Unknown'];
+    const ownership = c.ai_ownership_research || 'Not researched';
+    const cls = c.ai_ownership_research ? oc.cls : 'tag-not-researched';
+    const owners = c.owners && c.owners !== 'Unknown' ? c.owners : '\u2014';
+    const location = [c.city, c.state].filter(Boolean).join(', ') || c.state || '\u2014';
+    const website = c.website || '';
+
+    const grade = c.contact_grade;
+    const gradeClass = grade ? `grade-${grade}` : 'grade-none';
+    const gradeLabels = { 1: 'Decision Maker', 2: 'C-Suite', 3: 'Other' };
+    const gradeLabel = grade ? gradeLabels[grade] : '\u2014';
+
+    return `<tr>
+      <td>
+        <div class="td-name">${esc(c.name)}</div>
+        <div class="td-sub">${esc(c.industry_tags || '')}</div>
+      </td>
+      <td>${esc(location)}</td>
+      <td><span class="ownership-tag ${cls}">${esc(ownership)}</span>
+        ${c.ai_research_notes ? `<div class="td-sub" style="margin-top:4px; max-width:200px;">${esc(c.ai_research_notes).substring(0, 80)}${c.ai_research_notes.length > 80 ? '...' : ''}</div>` : ''}
+      </td>
+      <td style="text-align:center;">
+        <div class="grade-badge ${gradeClass}">${grade || '\u2014'}</div>
+        <div class="grade-label">${gradeLabel}</div>
+      </td>
+      <td style="max-width:220px; white-space:pre-line; font-size:11px; color:var(--text-secondary);">${formatOwners(owners)}</td>
+      <td>${website ? `<a href="https://${esc(website)}" target="_blank" class="td-link">${esc(website)}</a>` : '\u2014'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('tableCount').textContent = `${totalFiltered.toLocaleString()} companies`;
+  const start = (page - 1) * perPage + 1;
+  const end = Math.min(page * perPage, totalFiltered);
+  document.getElementById('paginationInfo').textContent = totalFiltered > 0 ? `Showing ${start}\u2013${end} of ${totalFiltered}` : 'No results';
+  document.getElementById('prevBtn').disabled = page <= 1;
+  document.getElementById('nextBtn').disabled = end >= totalFiltered;
+}
+
+function prevPage() { if (page > 1) { page--; loadCompanies(); } }
+function nextPage() { if (page * perPage < totalFiltered) { page++; loadCompanies(); } }
+
+function formatOwners(owners) {
+  if (!owners || owners === '\u2014') return '\u2014';
+  return owners.split('\n').map(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return '';
+    if (trimmed.match(/linkedin\.com/i)) {
+      const url = trimmed.startsWith('http') ? trimmed : 'https://' + trimmed;
+      return `<a href="${esc(url)}" target="_blank" style="color:#0a66c2; text-decoration:none; font-size:10px;">\ud83d\udd17 LinkedIn Profile</a>`;
+    }
+    return esc(trimmed);
+  }).filter(Boolean).join('<br>');
+}
+
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ── Boot ──────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
